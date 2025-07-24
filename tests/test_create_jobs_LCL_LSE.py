@@ -9,6 +9,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from faker import Faker
 
 fake = Faker()
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 class CreateJobLclLseTest(unittest.TestCase):
 
@@ -58,7 +61,7 @@ class CreateJobLclLseTest(unittest.TestCase):
         
         # Chọn Shipment Type
         # shipment_type = random.choice(["LCL", "LSE"])
-        shipment_type = "LCL"  # Giả sử chỉ test với LCL
+        shipment_type = "LSE"  # Giả sử chỉ test với LCL
         driver.find_element(By.XPATH, f"//span[text()='{shipment_type}']").click()
         
         # Click vào nút "Create New Job"
@@ -91,61 +94,64 @@ class CreateJobLclLseTest(unittest.TestCase):
         mblNo = fake.bothify(text='??-########')
         hblNo = fake.bothify(text='??-########')
         
-        shipment_type = "LCL"
+        # shipment_type = "LCL"
         job_type = "IMPORT"
         
-        if shipment_type == "LCL":
-            if job_type == "IMPORT":
-                driver.find_element(By.ID, "referenceNumber").send_keys(cusRefNo)
+        if job_type == "IMPORT":
+            driver.find_element(By.ID, "referenceNumber").send_keys(cusRefNo)
+            if shipment_type == 'LCL':
                 WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "vessel"))).click()
                 WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, f"//li[normalize-space(text())='{vessel}']"))).click()
                 driver.find_element(By.ID, "voyage").send_keys(voyage)
-                
-                # Nhập thông tin UNLOCO
-                driver.find_element(By.ID, "unlocoBoardOfLoading").send_keys(unloco)
-                driver.find_element(By.ID, "unlocoBoardOfDischarge").send_keys(unloco)
-                
-                # Nhâp thông tin ETA và ETD
-                driver.find_element(By.ID, "eta").send_keys(eta)
-                driver.find_element(By.ID, "etd").send_keys(etd)
-                
-                # Nhập các fields khác
-                driver.find_element(By.ID, "avail").send_keys(date_start)
-                driver.find_element(By.ID, "freeDate").send_keys(date_start)
-                driver.find_element(By.ID, "stor").send_keys(date_start)
-                driver.find_element(By.ID, "storLastFreeDate").send_keys(datetime_end)
-                driver.find_element(By.ID, "rcDate").send_keys(datetime_end)
-                driver.find_element(By.ID, "ercDate").send_keys(datetime_end)
-                driver.find_element(By.ID, "ecDate").send_keys(datetime_end)
-                driver.find_element(By.ID, "hrcDate").send_keys(datetime_end)
-                driver.find_element(By.ID, "hcDate").send_keys(datetime_end)
-                driver.find_element(By.ID, "mblNo").send_keys(mblNo)
-                driver.find_element(By.ID, "hblNo").send_keys(hblNo)
-            
-            # Chọn Agent ngẫu nhiên (field không bắt buộc)
-            if rdNum % 2 == 0:
-                WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "agent"))).click()
-                WebDriverWait(driver, 10).until(
-                    EC.presence_of_all_elements_located((By.XPATH, "//li[contains(@class, 'MuiAutocomplete-option')]"))
-                )
-                WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, f"//li[normalize-space(text())='{random.choice(['KINTRASYD', 'LAUCOMPER', 'ILUTRASYD'])}']"))).click()
-                # Chọn Consignee dựa theo Agent
-                self.select_random_option("consignee")
-                # Chọn accountReceivable
-                self.select_random_option("accountReceivable")
-                # Chọn deliWarehouse
-                self.select_random_option("warehouse")
             else:
-                # Chọn Consignee
-                WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "consignee"))).click()
-                WebDriverWait(driver, 10).until(
-                    EC.presence_of_all_elements_located((By.XPATH, "//li[contains(@class, 'MuiAutocomplete-option')]"))
-                )
-                WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, f"//li[normalize-space(text())='{random.choice(['KINTRASYD', 'CLAGLO', 'UCLOG'])}']"))).click()
-                # Chọn accountReceivable
-                self.select_random_option("accountReceivable")
-                # Chọn deliWarehouse
-                self.select_random_option("warehouse")
+                driver.find_element(By.ID, "flightNumber").send_keys(flightNo)
+                driver.find_element(By.ID, "airlineCode").send_keys(airlineCode)
+                
+            # Nhập thông tin UNLOCO
+            driver.find_element(By.ID, "unlocoBoardOfLoading").send_keys(unloco)
+            driver.find_element(By.ID, "unlocoBoardOfDischarge").send_keys(unloco)
+                
+            # Nhâp thông tin ETA và ETD
+            driver.find_element(By.ID, "eta").send_keys(eta)
+            driver.find_element(By.ID, "etd").send_keys(etd)
+                
+            # Nhập các fields khác
+            driver.find_element(By.ID, "avail").send_keys(date_start)
+            driver.find_element(By.ID, "freeDate").send_keys(date_start)
+            driver.find_element(By.ID, "stor").send_keys(date_start)
+            driver.find_element(By.ID, "storLastFreeDate").send_keys(datetime_end)
+            driver.find_element(By.ID, "rcDate").send_keys(datetime_end)
+            driver.find_element(By.ID, "ercDate").send_keys(datetime_end)
+            driver.find_element(By.ID, "ecDate").send_keys(datetime_end)
+            driver.find_element(By.ID, "hrcDate").send_keys(datetime_end)
+            driver.find_element(By.ID, "hcDate").send_keys(datetime_end)
+            driver.find_element(By.ID, "mblNo").send_keys(mblNo)
+            driver.find_element(By.ID, "hblNo").send_keys(hblNo)
+            
+        # Chọn Agent ngẫu nhiên (field không bắt buộc)
+        if rdNum % 2 == 0:
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "agent"))).click()
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_all_elements_located((By.XPATH, "//li[contains(@class, 'MuiAutocomplete-option')]"))
+            )
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, f"//li[normalize-space(text())='{random.choice(['KINTRASYD', 'LAUCOMPER', 'ILUTRASYD'])}']"))).click()
+            # Chọn Consignee dựa theo Agent
+            self.select_random_option("consignee")
+            # Chọn accountReceivable
+            self.select_random_option("accountReceivable")
+            # Chọn deliWarehouse
+            self.select_random_option("warehouse")
+        else:
+            # Chọn Consignee
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "consignee"))).click()
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_all_elements_located((By.XPATH, "//li[contains(@class, 'MuiAutocomplete-option')]"))
+            )
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, f"//li[normalize-space(text())='{random.choice(['KINTRASYD', 'CLAGLO', 'UCLOG'])}']"))).click()
+            # Chọn accountReceivable
+            self.select_random_option("accountReceivable")
+            # Chọn deliWarehouse
+            self.select_random_option("warehouse")
         
         driver.find_element(By.XPATH, "//button[.//span[text()='Save']]").click()
         WebDriverWait(driver, 10).until(
