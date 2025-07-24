@@ -6,7 +6,12 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from utils.result_writer import results, record_result
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from pages.login_page import LoginPage
+from config.setting import AGENT_EMAIL, AGENT_PASSWORD, SIGNIN_URL
 
 class LoginTest(unittest.TestCase):
 
@@ -16,49 +21,79 @@ class LoginTest(unittest.TestCase):
 
     def tearDown(self):
         self.driver.quit()
-
-    def test_001_login_success(self):
+        
+    def test_001(self):
+        '''
+        Test login with valid credentials
+        '''
         try:
             driver = self.driver
-            driver.get("https://demo.tech-demo.online/auth/sign-in")
-            WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "email")))
-            driver.find_element(By.ID, "email").send_keys("dummyops.syd@thandy.com.au")
-            driver.find_element(By.ID, "password").send_keys("pro123")
-            driver.find_element(By.XPATH, "//span[text()='Sign In']").click()
-            WebDriverWait(driver, 5).until(EC.url_contains("dashboard"))
-            self.assertIn("dashboard", driver.current_url)
-            record_result("test_001_login_success", "SUCCESS", self.test_start_time)
+            login_page = LoginPage(driver)
+            login_page.goto_login_page(SIGNIN_URL)
+            login_page.select_tenant()
+            login_page.fill_email(AGENT_EMAIL)
+            login_page.fill_password(AGENT_PASSWORD)
+            assert login_page.click_sign_in(), "Login failed"
         except Exception:
-            record_result("test_001_login_success", "FAIL", self.test_start_time, traceback.format_exc())
+            raise AssertionError(f"{self._testMethodName} failed due to an exception")
 
-    # def test_002_login_wrong_password(self):
-    #     try:
-    #         driver = self.driver
-    #         driver.get("https://demo.tech-demo.online/auth/sign-in")
-    #         WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "email")))
-    #         driver.find_element(By.ID, "email").send_keys("dummyops.syd@thandy.com.au")
-    #         driver.find_element(By.ID, "password").send_keys("pro1234")
-    #         driver.find_element(By.XPATH, "//span[text()='Sign In']").click()
-    #         error_msg = WebDriverWait(driver, 10).until(
-    #             EC.presence_of_element_located((By.XPATH, "//span[contains(text(), 'email or password')]"))
-    #         )
-    #         self.assertIn("you entered is incorrect", error_msg.text.lower())
-    #         record_result("test_002_login_wrong_password", "SUCCESS", self.test_start_time)
-    #     except Exception:
-    #         record_result("test_002_login_wrong_password", "FAIL", self.test_start_time, traceback.format_exc())
+    def test_002(self):
+        '''
+            Test login with wrong password
+        '''
+        try:
+            driver = self.driver
+            login_page = LoginPage(driver)
+            login_page.goto_login_page(SIGNIN_URL)
+            login_page.select_tenant()
+            login_page.fill_email(AGENT_EMAIL)
+            login_page.fill_password("wrongpassword")
+            assert not login_page.click_sign_in(), "Login should have failed"
+            error_msg = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//span[contains(text(), 'incorrect')]"))
+            )
+            assert "incorrect" in error_msg.text.lower()
+        except Exception as e:
+            print(f"Error: {e}")
+            traceback.print_exc()
+            raise AssertionError(f"{self._testMethodName} failed due to an exception")
 
-    # def test_003_login_null(self):
-    #     try:
-    #         driver = self.driver
-    #         driver.get("https://demo.tech-demo.online/auth/sign-in")
-    #         WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, "email")))
-    #         driver.find_element(By.ID, "email").send_keys("")
-    #         driver.find_element(By.ID, "password").send_keys("")
-    #         driver.find_element(By.XPATH, "//span[text()='Sign In']").click()
-    #         error_msg = WebDriverWait(driver, 10).until(
-    #             EC.presence_of_element_located((By.ID, "email-helper-text"))
-    #         )
-    #         self.assertIn("cannot be blank", error_msg.text.lower())
-    #         record_result("test_003_login_null", "SUCCESS", self.test_start_time)
-    #     except Exception:
-    #         record_result("test_003_login_null", "FAIL", self.test_start_time, traceback.format_exc())
+    def test_003(self):
+        '''
+        Test login with email not existed
+        '''
+        try:
+            driver = self.driver
+            login_page = LoginPage(driver)
+            login_page.goto_login_page(SIGNIN_URL)
+            login_page.select_tenant()
+            login_page.fill_email("fakeemail@gmail.com")
+            login_page.fill_password("anyPassword")
+            assert not login_page.click_sign_in(), "Login should have failed"
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//span[contains(text(), 'account')]"))
+            )
+        except Exception:
+            raise AssertionError(f"{self._testMethodName} failed due to an exception")
+            
+    def test_004(self):
+        '''
+        Test login with null email and password
+        '''
+        try:
+            driver = self.driver
+            login_page = LoginPage(driver)
+            login_page.goto_login_page(SIGNIN_URL)
+            login_page.select_tenant()
+            login_page.fill_email("")
+            login_page.fill_password("")
+            login_page.click_sign_in()
+            error_msg = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.ID, "email-helper-text"))
+            )
+            assert "cannot be blank" in error_msg.text.lower()
+        except Exception:
+            raise AssertionError(f"{self._testMethodName} failed due to an exception")
+    
+if __name__ == "__main__":
+    unittest.main()

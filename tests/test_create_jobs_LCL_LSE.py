@@ -18,7 +18,7 @@ class CreateJobLclLseTest(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
-        self.driver.get("https://demo.tech-demo.online/auth/sign-in")
+        self.driver.get("xxx")
         WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "email"))
         )
@@ -26,8 +26,8 @@ class CreateJobLclLseTest(unittest.TestCase):
 
     def login(self):
         driver = self.driver
-        driver.find_element(By.ID, "email").send_keys("dummyops.syd@thandy.com.au")
-        driver.find_element(By.ID, "password").send_keys("pro123")
+        driver.find_element(By.ID, "email").send_keys("xxx")
+        driver.find_element(By.ID, "password").send_keys("xxx")
         driver.find_element(By.XPATH, "//button[.//span[text()='Sign In']]").click()
         WebDriverWait(driver, 10).until(
             EC.url_contains("/admin/dashboard")
@@ -49,7 +49,7 @@ class CreateJobLclLseTest(unittest.TestCase):
         driver = self.driver
 
         # Truy cập trang tạo mới
-        driver.get("https://demo.tech-demo.online/admin/transport-jobs")
+        driver.get("xxx")
         wait = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "//span[text()='Transport Job']"))
         )
