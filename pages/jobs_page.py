@@ -54,7 +54,7 @@ class JobPage:
         self.driver.find_element(By.ID, "unlocoBoardOfLoading").send_keys(unloco)
         self.driver.find_element(By.ID, "unlocoBoardOfDischarge").send_keys(unloco)
     
-    def fill_eta_etd(self, eta):
+    def fill_eta(self, eta):
         self.driver.find_element(By.ID, "eta").send_keys(eta)
     
     def fill_etd(self, etd):
@@ -68,7 +68,7 @@ class JobPage:
     
     def fill_imp_storage_start_date(self, imp_storage_start_date):
         self.driver.find_element(By.ID, "stor").send_keys(imp_storage_start_date)
-        
+    
     def fill_exp_recv_date(self, exp_recv_date):
         self.driver.find_element(By.ID, "expRecvDate").send_keys(exp_recv_date)
     
