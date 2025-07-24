@@ -25,6 +25,8 @@ class LoginPage:
         
     def click_sign_in(self):
         self.driver.find_element(By.XPATH, "//button[.//span[text()='Sign In']]").click()
+
+    def is_login_successful(self):
         try:
             WebDriverWait(self.driver, 10).until(
                 EC.url_contains("/admin/dashboard")

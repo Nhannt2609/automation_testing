@@ -7,6 +7,7 @@ fake = Faker()
 class GenerateJobData:
     @staticmethod
     def generate_job_data():
+        clientType = random.choice(['agent', 'consignee']).upper()
         jobType = random.choice(['IMPORT', 'EXPORT', 'MISC'])
         cusRefNo = fake.bothify(text='?????')
         vessel = random.choice(['EVER GIVEN', 'EVER ULYSSES', 'UTOPIA OF THE SEAS'])
@@ -21,7 +22,8 @@ class GenerateJobData:
         datetime_end = '31-12-2025 23:59'
         agent = random.choice(['KINTRASYD', 'LAUCOMPER', 'ILUTRASYD'])
         consignee = random.choice(['KINTRASYD', 'CLAGLO', 'UCLOG'])
-        data = {
+        return {
+            "clientType": clientType,
             "jobType": jobType,
             "cusRefNo": cusRefNo,
             "vessel": vessel,
@@ -33,5 +35,4 @@ class GenerateJobData:
             "datetime_end": datetime_end,
             "agent": agent,
             "consignee": consignee
-        }
-        return data
+        }    
