@@ -192,6 +192,43 @@ class CreateJobTest(unittest.TestCase):
             traceback.print_exc()
             raise AssertionError(f"{self._testMethodName} failed due to an exception")
 
+    def test_005(self):
+        '''
+        Test checking the required field
+        '''
+        try:
+            driver = self.driver
+            data = GenerateJobData.generate_job_data()
+            if data['clientType'] == 'agent':
+                self.signIn(AGENT_EMAIL, AGENT_PASSWORD)
+            else:
+                self.signIn(CONSIGNEE_EMAIL, CONSIGNEE_PASSWORD)
+
+            job_page = JobPage(driver, client_type=data['clientType'])
+            job_page.goto_jobs_page(JOBS_URL)
+            job_page.click_create_new_job()
+            print(f"Creating job with data: {data}")
+            job_page.fill_job_type(data['jobType'])
+            job_page.submit_form()
+            
+            job_types = ['IMPORT', 'EXPORT']
+            
+            for job_type in job_types: 
+                job_page.fill_job_type(job_type)
+                job_page.submit_form()
+                if job_type == 'IMPORT':
+                    assert 'required field' in job_page.get_vessel_error().lower(), "Vessel field of IMP job is required but was left empty."
+                    assert 'cannot be blank' in job_page.get_voyage_error().lower(), "Voyage field of IMP job  is required but was left empty."
+                    assert 'cannot be blank' in job_page.get_eta_error().lower(), "ETA field of IMP job is required but was left empty."
+                elif job_type == 'EXPORT':
+                    assert 'required field' in job_page.get_vessel_error().lower(), "Vessel field of EXP job is required but was left empty."
+                    assert 'cannot be blank' in job_page.get_voyage_error().lower(), "Voyage field of EXP job is required but was left empty."
+                    assert 'cannot be blank' in job_page.get_etd_error().lower(), "ETD field of EXP job is required but was left empty."
+        except Exception as e:
+            print(f"Error: {e}")
+            traceback.print_exc()
+            raise AssertionError(f"{self._testMethodName} failed due to an exception")
+    
       
 if __name__ == "__main__":
     unittest.main()

@@ -4,9 +4,34 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
 
 
 class JobPage:
+    
+    FIELD_ID_MAP = {
+        "jobType": "jobType",
+        "vessel": "vessel",
+        "voyage": "voyage",
+        "lloyd": "lloyd",
+        "eta": "eta",
+        "etd": "etd",
+        "cusRefNo": "referenceNumber",
+        "unlocoPortLoading": "unlocoBoardOfLoading",
+        "unlocoPortDischarge": "unlocoBoardOfDischarge",
+        "imp available date": "avail",
+        "first free date": "freeDate",
+        "imp storage start date": "stor",
+        "imp storage last date": "storLastFreeDate",
+        "exp receival date": "expRcvDate",
+        "cargo cutoff date": "cutOffDate",
+        "reefer cutoff date": "rcDate",
+        "empty receival date": "ercDate",
+        "empty cutoff date": "ecDate",
+        "harz receival date": "hrcDate",
+        "harz cutoff date": "hcDate"
+    }
+    
     def __init__(self, driver, client_type):
         self.driver = driver
         self.client_type = client_type
@@ -32,7 +57,9 @@ class JobPage:
         if not filtered:
             raise Exception(f"No valid options found for #{input_id}")
         random.choice(filtered).click()
-        
+    
+    # Method for filling
+    
     def fill_job_type(self, job_type):
         WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, "jobType"))).click()
         time.sleep(1)  # Wait for options to load
@@ -45,19 +72,25 @@ class JobPage:
         ).click()
         
     def fill_voyage(self, voyage):
+        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "voyage")))
         WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, "voyage"))).send_keys(voyage)
         
     def fill_reference_number(self, reference_number):
+        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "referenceNumber")))
         self.driver.find_element(By.ID, "referenceNumber").send_keys(reference_number)
     
     def fill_unloco(self, unloco):
+        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "unlocoBoardOfLoading")))
+        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "unlocoBoardOfDischarge")))
         self.driver.find_element(By.ID, "unlocoBoardOfLoading").send_keys(unloco)
         self.driver.find_element(By.ID, "unlocoBoardOfDischarge").send_keys(unloco)
     
     def fill_eta(self, eta):
+        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "eta")))
         self.driver.find_element(By.ID, "eta").send_keys(eta)
     
     def fill_etd(self, etd):
+        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "etd")))
         self.driver.find_element(By.ID, "etd").send_keys(etd)
         
     def fill_imp_available_date(self, imp_available_date):
@@ -108,9 +141,9 @@ class JobPage:
         except Exception as e:
             return False
     
-    def fill_empty_recv_date(self, empty_recv_date):
-        WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "ercDate")))
-        self.driver.find_element(By.ID, "ercDate").send_keys(empty_recv_date)
+    # def fill_empty_recv_date(self, empty_recv_date):
+    #     WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "ercDate")))
+    #     self.driver.find_element(By.ID, "ercDate").send_keys(empty_recv_date)
     
     def fill_empty_recv_date(self, empty_recv_date):
         try:
@@ -177,7 +210,10 @@ class JobPage:
         self.select_random_option("warehouse")
 
     def submit_form(self):
-        self.driver.find_element(By.XPATH, "//button[.//span[text()='Save']]").click()
+        save_button = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[.//span[text()='Save']]"))
+        )
+        save_button.click()
 
     def is_success_message_visible(self):
         try:
@@ -187,3 +223,124 @@ class JobPage:
             return True
         except:
             return False
+    
+    # Method for getting data
+    def get_field_value(self, field_name):
+        field_id = self.FIELD_ID_MAP.get(field_name)
+        if not field_id:
+            raise ValueError(f"Unknown field name: {field_name}")
+        return self.driver.find_element(By.ID, field_id).get_attribute("value")
+    
+    # Method for getting error message
+    
+    def get_vessel_error(self):
+        try:
+            return self.driver.find_element(By.ID, "vessel-helper-text").text
+        except NoSuchElementException:
+            return ''
+        
+    def get_voyage_error(self):
+        try:
+            return self.driver.find_element(By.ID, "voyage-helper-text").text
+        except NoSuchElementException:
+            return ''
+        
+    def get_etd_error(self):
+        try:
+            WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.ID, "etd")))
+            return self.driver.find_element(By.ID, "etd-helper-text").text
+        except NoSuchElementException:
+            return ''
+        
+    def get_eta_error(self):
+        try:
+            return self.driver.find_element(By.ID, "eta-helper-text").text
+        except NoSuchElementException:
+            return ''
+    
+
+class ContainerTab(JobPage):
+    def __init__(self, driver):
+        self.driver = driver
+    
+    def gotoContainer(self, job_url, job_id):
+        con_url = f"{job_url}/{job_id}"
+        self.driver.get(con_url)
+        WebDriverWait(self.driver, 5).until(
+            EC.presence_of_element_located((By.XPATH, "//span[text()='Container']"))
+        )
+        
+    def click_add_container(self):
+        WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-testid="AddBoxIcon"]'))
+        ).click()
+    
+    def fill_containerNumber(self, containerNumber):
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.ID, "code"))
+            )
+            self.driver.find_element(By.ID, "code").send_keys(containerNumber)
+            return True
+        except Exception:
+            return False
+    
+    def fill_sealNumber(self, sealNumber):
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.ID, "sealNumber"))
+            )
+            self.driver.find_element(By.ID, "sealNumber").send_keys(sealNumber)
+            return True
+        except Exception:
+            return False
+    
+    def fill_dropMode(self, dropMode):
+        try:
+            WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, "dropMode"))).click()
+            WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, f"//li[normalize-space(text())='{dropMode}']"))
+            ).click()
+            return True
+        except Exception:
+            return False
+    
+    def fill_containerSize(self, containerSize):
+        try:
+            WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, "containerSize"))).click()
+            WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, f"//li[normalize-space(text())='{containerSize}']"))
+            ).click()
+            return True
+        except Exception:
+            return False
+    
+    def fill_net(self, net):
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.ID, "net"))
+            )
+            self.driver.find_element(By.ID, "net").send_keys(net)
+            return True
+        except Exception:
+            return False
+        
+    def fill_door(self, door):
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.ID, "doorType"))
+            )
+            self.driver.find_element(By.ID, "doorType").send_keys(door)
+            return True
+        except Exception:
+            return False
+    
+    def tick_harzadous(self):
+        try:
+            checkbox = self.driver.find_element(By.XPATH, "//div[@name='isDamagedGood' and .//span[text()='Hazardous Goods']]")
+            checkbox.click()
+            return True
+        except:
+            return False
+        
+    

@@ -8,7 +8,7 @@ class GenerateJobData:
     @staticmethod
     def generate_job_data():
         clientType = random.choice(['agent', 'consignee']).upper()
-        jobType = random.choice(['IMPORT', 'EXPORT', 'MISC'])
+        jobType = random.choice(['IMPORT', 'EXPORT'])
         cusRefNo = fake.bothify(text='?????')
         vessel = random.choice(['EVER GIVEN', 'EVER ULYSSES', 'UTOPIA OF THE SEAS'])
         voyage = 'V' + str(random.randint(1000, 9999))
@@ -24,7 +24,7 @@ class GenerateJobData:
         consignee = random.choice(['KINTRASYD', 'CLAGLO', 'UCLOG'])
         return {
             "clientType": clientType,
-            "jobType": jobType,
+            "jobType": 'MISC',
             "cusRefNo": cusRefNo,
             "vessel": vessel,
             "voyage": voyage,
